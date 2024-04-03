@@ -1,0 +1,76 @@
+% Afficher le profil de puissance
+figure;%cree une nouvelle figure 
+plot(x, z);% trace les donnees originales en fonction de x 
+xlabel('Distance (m)');
+ylabel('Puissance reçue (dBm)');
+title('Profil de puissance');
+
+-------------------------------------------
+
+% Afficher les variations lentes 
+windowSize=50;  % declare une variable windowSize pour representer la taille de la fenetre on lui attribue 50
+z_slow = movmean(z, windowSize); % Cette ligne calcule la moyenne mobile de la série de données z en utilisant une fenêtre de taille windowSize.
+hold on;
+plot(x, z_slow, 'r'); %trace les données lissées z_slow sur le graphique en utilisant la variable x comme axe des abscisses. Les données sont tracées en rouge ('r').
+legend('Puissance initiale', 'Variations lentes');
+
+
+z_fast = z - z_slow;% calcule les variations rapides en soustrayant les donnees lissees des donnees originales
+figure; % cree une nouvelle figure pour le prochain graphique
+plot(x, z_fast); %trace les variations rapides en fonction de x
+title('Variations rapides');
+xlabel('Distance (m)');
+ylabel('Variations de Puissance (dBm)');
+
+-------------------------------------------------------------------
+
+c = 3e8; % Vitesse de la lumière en m/s
+freq = 37.2e9; % Fréquence en Hz
+lambda = c / freq; % Longueur d'onde en mètres
+segment_length = 20 * lambda; % Longueur du segment en mètres
+
+
+% Supposons que x et z soient déjà chargés et contiennent les données de mesure
+% Calculez la distance totale couverte par les mesures
+total_distance = max(x) - min(x);
+points_per_segment = round(segment_length / (total_distance / length(x)));
+
+gradient = [];
+variance = [];
+
+% Parcourir les données par segment de 20 lambda
+for start_idx = 1:points_per_segment:length(x)
+    end_idx = start_idx + points_per_segment - 1;
+    if end_idx > length(x)
+        end_idx = length(x);
+    end
+
+    % Extraire le segment
+    segment_x = x(start_idx:end_idx);
+    segment_z = z(start_idx:end_idx);
+
+    % Calcul de la régression linéaire
+    p = polyfit(segment_x, segment_z, 1);
+    gradient(end+1) = p(1); % Le gradient de perte est la pente
+
+    % Calcul de la variance pour le segment
+    variance(end+1) = var(segment_z);
+
+    % Tracer le segment et la ligne de régression
+    figure;
+    plot(segment_x, segment_z, 'b.'); % Données du segment
+    hold on;
+    plot(segment_x, polyval(p, segment_x), 'r-'); % Ligne de régression
+    title(sprintf('Segment starting at %d m', round(segment_x(1))));
+    xlabel('Distance (m)');
+    ylabel('Puissance reçue (dBm)');
+    legend('Données réelles', 'Régression linéaire');
+end
+---------------------------------------------------------------------
+
+% Afficher les résultats globaux
+disp('Gradient des pertes (n) pour chaque segment:');
+disp(gradient);
+disp('Variance (σ²) pour chaque segment:');
+disp(variance);
+
