@@ -1,3 +1,4 @@
+% ---------------------------------PHASE I---------------------------------------------------------------
 % Afficher le profil de puissance
 figure;%cree une nouvelle figure 
 plot(x, z);% trace les donnees originales en fonction de x 
@@ -73,4 +74,94 @@ disp('Gradient des pertes (n) pour chaque segment:');
 disp(gradient);
 disp('Variance (σ²) pour chaque segment:');
 disp(variance);
+%-----------------------------PHASE II--------------------------------------------------------------------------
 
+ % Paramètres initiaux
+f = 893e6; % fréquence en Hz
+c = 3e8; % vitesse de la lumière en m/s
+lambda = c / f; % longueur d'onde en mètres
+ht =1.5; hr = 1.5; % hauteur des antennes en mètres
+R = -1; % Coefficient de réflexion pour le plancher
+
+% Création d'une matrice de distances
+d = 1:0.01:9; % Distance de 1m à 9m avec des incrémentations de 1cm
+
+% Calcul de la puissance reçue normalisée pour chaque distance
+Pr = zeros(size(d)); % Initialisation du vecteur de puissance reçue
+for i = 1:length(d)
+    d0 = sqrt((d(i))^2 + (ht + hr)^2); % distance LOS
+    d1 = sqrt((d(i))^2 + (ht - hr)^2); % distance réfléchie
+    delta_d = d0 - d1; % différence de trajet
+
+    % Champ électrique reçu
+    e = sqrt(60*pi) * (exp(-1i * 2 * pi * d0 / lambda) / d0 + R * exp(-1i * 2 * pi * d1 / lambda) / d1);
+    Pr(i) = 20 * log10(abs(e)); % Puissance reçue en dB
+end
+
+% Affichage du profil de puissance
+plot(d, Pr);
+xlabel('Distance (m)');
+ylabel('Puissance reçue (dB)');
+title('Profil de puissance reçue normalisée');
+grid on;
+% Paramètres initiaux
+f = 893e6; % fréquence en Hz
+c = 3e8; % vitesse de la lumière en m/s
+lambda = c / f; % longueur d'onde en mètres
+ht =1.5; hr = 1.5; % hauteur des antennes en mètres
+R = -1; % Coefficient de réflexion pour le plancher
+
+% Création d'une matrice de distances
+d = 1:0.01:9; % Distance de 1m à 9m avec des incrémentations de 1cm
+
+% Calcul de la puissance reçue normalisée pour chaque distance
+Pr = zeros(size(d)); % Initialisation du vecteur de puissance reçue
+for i = 1:length(d)
+    d0 = sqrt((d(i))^2 + (ht + hr)^2); % distance LOS
+    d1 = sqrt((d(i))^2 + (ht - hr)^2); % distance réfléchie
+    delta_d = d0 - d1; % différence de trajet
+
+    % Champ électrique reçu
+    e = sqrt(60*pi) * (exp(-1i * 2 * pi * d0 / lambda) / d0 + R * exp(-1i * 2 * pi * d1 / lambda) / d1);
+    Pr(i) = 20 * log10(abs(e)); % Puissance reçue en dB
+end
+
+% Affichage du profil de puissance
+plot(d, Pr);
+xlabel('Distance (m)');
+ylabel('Puissance reçue (dB)');
+title('Profil de puissance reçue normalisée');
+grid on;
+
+% ...
+
+% Pour n = 1 et n = 3
+for n = [1, 3]
+    Pr_n = zeros(size(d)); % Initialisation du vecteur de puissance reçue
+    for i = 1:length(d)
+        % ...
+        psi = atan2(hr, d(i)); % angle de l'antenne avec la distance
+
+        % Gain de l'antenne directionnelle
+        G = cos(psi)^n;
+
+        % Champ électrique reçu avec le gain de l'antenne
+        e = G * sqrt(60*pi) * (exp(-1i * 2 * pi * d0 / lambda) / d0 + R * exp(-1i * 2 * pi * d1 / lambda) / d1);
+        Pr_n(i) = 20 * log10(abs(e)); % Puissance reçue en dB
+    end
+    
+    % Ajout du tracé au graphique existant
+    hold on;
+    plot(d, Pr_n, 'DisplayName', ['n=' num2str(n)]);
+end
+
+% ...% ...
+
+epsilon = 12; % Constante diélectrique du plancher pour les calculs TM et TE
+
+% Coefficients de réflexion pour les murs
+% À compléter avec la loi de Snell pour calculer l'angle de réflexion et l'incidence
+
+% ...
+
+% Utiliser les coefficients R calculés dans la boucle de calcul de Pr
